@@ -1,0 +1,161 @@
+.message-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.message-wrapper.user {
+  align-items: flex-end;
+}
+
+.message-wrapper.system {
+  align-items: flex-start;
+}
+
+.message-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.message-content.user {
+  align-items: flex-end;
+}
+
+.message-content.system {
+  align-items: flex-start;
+}
+
+/* 用户消息气泡 */
+.user-message-bubble {
+  background-color: var(--color-user-bg);
+  color: var(--color-text-primary);
+  padding: var(--spacing-md);
+  border-radius: var(--radius-lg);
+  max-width: 70%;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  line-height: 1.5;
+}
+
+/* 系统消息 */
+.system-message {
+  background-color: var(--color-system-bg);
+  color: var(--color-text-primary);
+  padding: var(--spacing-md);
+  border-radius: var(--radius-lg);
+  width: 100%;
+  line-height: 1.6;
+}
+
+.markdown-content {
+  margin: 0;
+}
+
+.markdown-content p {
+  margin: 0.5em 0;
+}
+
+.markdown-content h1,
+.markdown-content h2,
+.markdown-content h3 {
+  margin: 1em 0 0.5em;
+  font-weight: 600;
+}
+
+.markdown-content h1 {
+  font-size: 1.5em;
+}
+
+.markdown-content h2 {
+  font-size: 1.25em;
+}
+
+.markdown-content h3 {
+  font-size: 1.1em;
+}
+
+.markdown-content ul,
+.markdown-content ol {
+  margin: 0.5em 0;
+  padding-left: 2em;
+}
+
+.markdown-content li {
+  margin: 0.25em 0;
+}
+
+.markdown-content code {
+  background-color: var(--color-highlight);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.9em;
+}
+
+.markdown-content pre {
+  background-color: var(--color-highlight);
+  padding: var(--spacing-md);
+  border-radius: var(--radius-md);
+  overflow-x: auto;
+  margin: 0.5em 0;
+}
+
+.markdown-content pre code {
+  background-color: transparent;
+  padding: 0;
+}
+
+.markdown-content blockquote {
+  border-left: 3px solid var(--color-highlight);
+  padding-left: var(--spacing-md);
+  margin: 0.5em 0;
+  color: var(--color-text-secondary);
+}
+
+/* 消息操作按钮 */
+.message-actions {
+  display: flex;
+  gap: 8px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.message-wrapper.system:hover .message-actions {
+  opacity: 1;
+}
+
+.message-actions .ant-btn {
+  color: var(--color-text-secondary);
+  border: none;
+  height: 28px;
+  width: 28px;
+  padding: 0;
+}
+
+.message-actions .ant-btn:hover {
+  color: var(--color-text-primary);
+  background-color: var(--color-highlight);
+}
+
+/* 消息时间戳 */
+.message-timestamp {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  padding: 0 var(--spacing-md);
+}
+
+.message-wrapper.user .message-timestamp {
+  text-align: right;
+}
+
+.message-wrapper.system .message-timestamp {
+  text-align: left;
+}
+
+@media (max-width: 768px) {
+  .user-message-bubble {
+    max-width: 85%;
+  }
+}

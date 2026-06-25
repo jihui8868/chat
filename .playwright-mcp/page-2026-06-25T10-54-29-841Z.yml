@@ -1,0 +1,112 @@
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - generic [ref=e5]:
+      - heading "Chat" [level=2] [ref=e6]
+      - button "切换侧边栏" [ref=e7] [cursor=pointer]:
+        - img [ref=e8]
+    - button "发起新根因分析" [ref=e9] [cursor=pointer]:
+      - img [ref=e11]
+      - text: 发起新根因分析
+    - menu [ref=e13]:
+      - menuitem "如何学习React?" [ref=e14] [cursor=pointer]:
+        - generic [ref=e17]: 如何学习React?
+      - menuitem "前端性能优化" [ref=e18] [cursor=pointer]:
+        - generic [ref=e21]: 前端性能优化
+      - menuitem "CSS Grid 布局" [ref=e22] [cursor=pointer]:
+        - generic [ref=e25]: CSS Grid 布局
+    - generic [ref=e26]:
+      - generic [ref=e27]:
+        - generic [ref=e29]: JH
+        - generic [ref=e31]: 冀辉
+      - button "更多选项" [ref=e32] [cursor=pointer]:
+        - img [ref=e33]
+  - generic [ref=e36]:
+    - generic [ref=e37]:
+      - heading "React Hooks 详解" [level=1] [ref=e39]
+      - button [ref=e41] [cursor=pointer]:
+        - img [ref=e43]
+    - generic [ref=e48]:
+      - generic [ref=e49]:
+        - generic [ref=e51]: 你好，请帮我解释一下 React Hooks 的工作原理？
+        - generic [ref=e52]: 18:49
+      - generic [ref=e53]:
+        - generic [ref=e54]:
+          - generic [ref=e56]:
+            - paragraph [ref=e57]: React Hooks 是在函数式组件中使用状态和其他 React 特性的方式。
+            - paragraph [ref=e58]:
+              - strong [ref=e59]: 主要 Hooks 包括：
+            - list [ref=e60]:
+              - listitem [ref=e61]:
+                - strong [ref=e62]: useState
+                - text: "- 用于在函数组件中添加状态"
+              - listitem [ref=e63]:
+                - strong [ref=e64]: useEffect
+                - text: "- 用于处理副作用（数据获取、订阅等）"
+              - listitem [ref=e65]:
+                - strong [ref=e66]: useContext
+                - text: "- 用于访问 React Context"
+              - listitem [ref=e67]:
+                - strong [ref=e68]: useReducer
+                - text: "- 用于复杂的状态管理"
+              - listitem [ref=e69]:
+                - strong [ref=e70]: useRef
+                - text: "- 用于访问 DOM 节点或保存可变值"
+            - paragraph [ref=e71]:
+              - strong [ref=e72]: 工作原理：
+            - paragraph [ref=e73]: Hooks 通过闭包和调用顺序来跟踪组件的状态。每次组件渲染时，Hooks 按相同顺序被调用，这使 React 能够正确地关联状态值与具体的 Hook。
+          - generic [ref=e74]:
+            - button "点赞" [ref=e75] [cursor=pointer]:
+              - img [ref=e77]
+            - button "踩" [ref=e79] [cursor=pointer]:
+              - img [ref=e81]
+            - button "复制" [ref=e83] [cursor=pointer]:
+              - img [ref=e85]
+            - button "分享" [ref=e88] [cursor=pointer]:
+              - img [ref=e90]
+            - button "重新生成" [ref=e96] [cursor=pointer]:
+              - img [ref=e98]
+        - generic [ref=e101]: 18:50
+      - generic [ref=e102]:
+        - generic [ref=e104]: 那 useEffect 的依赖数组有什么作用呢？
+        - generic [ref=e105]: 18:51
+      - generic [ref=e106]:
+        - generic [ref=e107]:
+          - generic [ref=e109]:
+            - paragraph [ref=e110]: 依赖数组控制 useEffect 何时运行：
+            - list [ref=e111]:
+              - listitem [ref=e112]:
+                - strong [ref=e113]:
+                  - text: 空数组
+                  - code [ref=e114]: "[]"
+                - text: "- 仅在组件挂载时运行一次"
+              - listitem [ref=e115]:
+                - strong [ref=e116]: 不传依赖数组
+                - text: "- 每次组件渲染后都运行"
+              - listitem [ref=e117]:
+                - strong [ref=e118]: 包含依赖项
+                - text: "- 当依赖项变化时运行"
+            - code [ref=e120]: "useEffect(() => { // 仅在挂载时运行 console.log('Component mounted') }, []) useEffect(() => { // 当 userId 或 postId 变化时运行 fetchData(userId, postId) }, [userId, postId])"
+            - paragraph [ref=e121]: 不正确设置依赖数组会导致性能问题或 bug。
+          - generic [ref=e122]:
+            - button "点赞" [ref=e123] [cursor=pointer]:
+              - img [ref=e125]
+            - button "踩" [ref=e127] [cursor=pointer]:
+              - img [ref=e129]
+            - button "复制" [ref=e131] [cursor=pointer]:
+              - img [ref=e133]
+            - button "分享" [ref=e136] [cursor=pointer]:
+              - img [ref=e138]
+            - button "重新生成" [ref=e144] [cursor=pointer]:
+              - img [ref=e146]
+        - generic [ref=e149]: 18:52
+    - generic [ref=e150]:
+      - generic [ref=e152]:
+        - button "添加附件" [ref=e153] [cursor=pointer]:
+          - img [ref=e154]
+        - textbox "输入你的问题..." [ref=e157]
+        - generic [ref=e158]:
+          - button "语音输入" [ref=e159] [cursor=pointer]:
+            - img [ref=e160]
+          - button "发送" [disabled] [ref=e163]:
+            - img [ref=e164]
+      - paragraph [ref=e167]: 本 AI 可能会生成不准确的信息。请验证重要信息。
