@@ -24,7 +24,7 @@ export default function ChatArea({ messages, isLoading }) {
     <div className="chat-area" ref={scrollContainerRef}>
       <div className="messages-container">
         {messages.map((message) => (
-          <ChatMessage key={message.id} message={message} />
+          <ChatMessage key={message.id} message={message} streaming={message.streaming} />
         ))}
         {isLoading && (
           <div className="loading-indicator">

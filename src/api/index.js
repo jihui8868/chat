@@ -100,9 +100,41 @@ export async function createMessage(convId, type, content) {
   })
 }
 
-export async function sendChat(convId, content) {
-  return request(`/conversations/${convId}/chat`, {
+export async function streamChat(convId, content, { onUserMessage, onChunk, onDone, onError } = {}) {
+  const token = getToken()
+  const res = await fetch(`${BASE}/conversations/${convId}/chat/stream`, {
     method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
     body: JSON.stringify({ content }),
   })
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: res.statusText }))
+    throw new Error(err.detail || '请求失败')
+  }
+
+  const reader = res.body.getReader()
+  const decoder = new TextDecoder()
+  let buffer = ''
+
+  while (true) {
+    const { done, value } = await reader.read()
+    if (done) break
+    buffer += decoder.decode(value, { stream: true })
+    const lines = buffer.split('\n')
+    buffer = lines.pop()
+    for (const line of lines) {
+      if (!line.startsWith('data: ')) continue
+      try {
+        const data = JSON.parse(line.slice(6))
+        if (data.type === 'user_message') onUserMessage?.(data.message)
+        else if (data.type === 'chunk') onChunk?.(data.content)
+        else if (data.type === 'done') onDone?.(data.message)
+        else if (data.type === 'error') onError?.(data.detail)
+      } catch {}
+    }
+  }
 }

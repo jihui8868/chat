@@ -4,7 +4,7 @@ import { ThumbsUp, ThumbsDown, Copy, Share2, RotateCcw } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import './ChatMessage.css'
 
-export default function ChatMessage({ message }) {
+export default function ChatMessage({ message, streaming }) {
   const [copied, setCopied] = useState(false)
 
   const handleCopy = () => {
@@ -26,9 +26,8 @@ export default function ChatMessage({ message }) {
         ) : (
           <div className="system-message">
             <div className="markdown-content">
-              <ReactMarkdown>
-                {message.content}
-              </ReactMarkdown>
+              <ReactMarkdown>{message.content}</ReactMarkdown>
+              {streaming && <span className="streaming-cursor" />}
             </div>
           </div>
         )}
