@@ -110,7 +110,7 @@ function App() {
     setMessages(prev => [
       ...prev,
       { id: tempUserId, conversation_id: convId, type: 'user', content, timestamp: now, created_at: now.toISOString() },
-      { id: tempAiId, conversation_id: convId, type: 'assistant', content: '', timestamp: now, created_at: now.toISOString(), streaming: true },
+      { id: tempAiId, conversation_id: convId, type: 'assistant', content: '', blocks: [], timestamp: now, created_at: now.toISOString(), streaming: true },
     ])
 
     try {
@@ -120,15 +120,34 @@ function App() {
             m.id === tempUserId ? { ...msg, timestamp: new Date(msg.created_at) } : m
           ))
         },
-        onChunk: (chunk) => {
-          setMessages(prev => prev.map(m =>
-            m.id === tempAiId ? { ...m, content: m.content + chunk } : m
-          ))
+        onTextChunk: (chunk) => {
+          setMessages(prev => prev.map(m => {
+            if (m.id !== tempAiId) return m
+            const blocks = [...(m.blocks || [])]
+            const last = blocks[blocks.length - 1]
+            if (last && last.type === 'text') {
+              blocks[blocks.length - 1] = { ...last, content: last.content + chunk }
+            } else {
+              blocks.push({ type: 'text', content: chunk })
+            }
+            return { ...m, content: m.content + chunk, blocks }
+          }))
+        },
+        onAgentData: (evt) => {
+          const blockType = ['database_list', 'table_list', 'column_list'].includes(evt.data_type)
+            ? 'table'
+            : 'json'
+          setMessages(prev => prev.map(m => {
+            if (m.id !== tempAiId) return m
+            const blocks = [...(m.blocks || []), { type: blockType, data_type: evt.data_type, data: evt.data }]
+            return { ...m, blocks }
+          }))
         },
         onDone: (msg) => {
-          setMessages(prev => prev.map(m =>
-            m.id === tempAiId ? { ...msg, timestamp: new Date(msg.created_at) } : m
-          ))
+          setMessages(prev => prev.map(m => {
+            if (m.id !== tempAiId) return m
+            return { ...msg, blocks: m.blocks, timestamp: new Date(msg.created_at) }
+          }))
           setConversations(prev => {
             const idx = prev.findIndex(c => c.id === convId)
             if (idx < 0) return prev

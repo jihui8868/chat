@@ -100,7 +100,7 @@ export async function createMessage(convId, type, content) {
   })
 }
 
-export async function streamChat(convId, content, { onUserMessage, onChunk, onDone, onError } = {}) {
+export async function streamChat(convId, content, { onUserMessage, onChunk, onTextChunk, onAgentData, onDone, onError } = {}) {
   const token = getToken()
   const res = await fetch(`${BASE}/conversations/${convId}/chat/stream`, {
     method: 'POST',
@@ -131,7 +131,9 @@ export async function streamChat(convId, content, { onUserMessage, onChunk, onDo
       try {
         const data = JSON.parse(line.slice(6))
         if (data.type === 'user_message') onUserMessage?.(data.message)
-        else if (data.type === 'chunk') onChunk?.(data.content)
+        else if (data.type === 'chunk') onChunk?.(data.content)          // legacy
+        else if (data.type === 'text_chunk') { onTextChunk?.(data.content); onChunk?.(data.content) }
+        else if (data.type === 'agent_data') onAgentData?.(data)
         else if (data.type === 'done') onDone?.(data.message)
         else if (data.type === 'error') onError?.(data.detail)
       } catch {}
