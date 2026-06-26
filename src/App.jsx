@@ -1,80 +1,141 @@
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import './App.css'
 import Sidebar from './components/Sidebar'
 import MainContent from './components/MainContent'
+import LoginPage from './components/LoginPage'
+import {
+  login, saveAuth, loadAuth, clearAuth,
+  fetchConversations, createConversation, updateConversation,
+  fetchMessages, createMessage,
+} from './api/index.js'
 
 function App() {
+  const [auth, setAuth] = useState(() => loadAuth())
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
-  const [conversations, setConversations] = useState([
-    { id: 1, title: '如何学习React?', timestamp: '今天 14:30' },
-    { id: 2, title: '前端性能优化', timestamp: '昨天 10:15' },
-    { id: 3, title: 'CSS Grid 布局', timestamp: '3天前' },
-  ])
-  const [currentConversationId, setCurrentConversationId] = useState(1)
-  const [messages, setMessages] = useState([
-    {
-      id: 1,
-      type: 'user',
-      content: '你好，请帮我解释一下 React Hooks 的工作原理？',
-      timestamp: new Date(Date.now() - 300000)
-    },
-    {
-      id: 2,
-      type: 'system',
-      content: 'React Hooks 是在函数式组件中使用状态和其他 React 特性的方式。\n\n**主要 Hooks 包括：**\n\n1. **useState** - 用于在函数组件中添加状态\n2. **useEffect** - 用于处理副作用（数据获取、订阅等）\n3. **useContext** - 用于访问 React Context\n4. **useReducer** - 用于复杂的状态管理\n5. **useRef** - 用于访问 DOM 节点或保存可变值\n\n**工作原理：**\n\nHooks 通过闭包和调用顺序来跟踪组件的状态。每次组件渲染时，Hooks 按相同顺序被调用，这使 React 能够正确地关联状态值与具体的 Hook。',
-      timestamp: new Date(Date.now() - 240000)
-    },
-    {
-      id: 3,
-      type: 'user',
-      content: '那 useEffect 的依赖数组有什么作用呢？',
-      timestamp: new Date(Date.now() - 180000)
-    },
-    {
-      id: 4,
-      type: 'system',
-      content: '依赖数组控制 useEffect 何时运行：\n\n- **空数组 `[]`** - 仅在组件挂载时运行一次\n- **不传依赖数组** - 每次组件渲染后都运行\n- **包含依赖项** - 当依赖项变化时运行\n\n```javascript\nuseEffect(() => {\n  // 仅在挂载时运行\n  console.log(\'Component mounted\')\n}, [])\n\nuseEffect(() => {\n  // 当 userId 或 postId 变化时运行\n  fetchData(userId, postId)\n}, [userId, postId])\n```\n\n不正确设置依赖数组会导致性能问题或 bug。',
-      timestamp: new Date(Date.now() - 120000)
-    }
-  ])
 
-  const handleNewChat = () => {
-    const newId = Math.max(...conversations.map(c => c.id)) + 1
-    const newConversation = {
-      id: newId,
-      title: '新对话',
-      timestamp: '现在'
+  const [conversations, setConversations] = useState([])
+  const [convsLoading, setConvsLoading] = useState(false)
+
+  const [currentConvId, setCurrentConvId] = useState(null)
+  const [messages, setMessages] = useState([])
+  const [msgsLoading, setMsgsLoading] = useState(false)
+
+  // 加载当前用户的会话列表
+  const loadConversations = useCallback(async (userId) => {
+    setConvsLoading(true)
+    try {
+      const items = await fetchConversations(userId)
+      setConversations(items)
+      // 默认选中最新的一条
+      if (items.length > 0) {
+        setCurrentConvId(items[0].id)
+      }
+    } catch (e) {
+      console.error('加载会话失败', e)
+    } finally {
+      setConvsLoading(false)
     }
-    setConversations([newConversation, ...conversations])
-    setCurrentConversationId(newId)
+  }, [])
+
+  // 登录或恢复 session 后加载会话
+  useEffect(() => {
+    if (auth?.user?.id) loadConversations(auth.user.id)
+    else { setConversations([]); setCurrentConvId(null); setMessages([]) }
+  }, [auth, loadConversations])
+
+  // 切换会话时加载消息
+  useEffect(() => {
+    if (!currentConvId) { setMessages([]); return }
+    let cancelled = false
+    setMsgsLoading(true)
     setMessages([])
+    fetchMessages(currentConvId)
+      .then(items => {
+        if (cancelled) return
+        setMessages(items.map(m => ({ ...m, timestamp: new Date(m.created_at) })))
+      })
+      .catch(e => console.error('加载消息失败', e))
+      .finally(() => { if (!cancelled) setMsgsLoading(false) })
+    return () => { cancelled = true }
+  }, [currentConvId])
+
+  const handleLogin = async (username, password) => {
+    const { token, user } = await login(username, password)
+    saveAuth(token, user)
+    setAuth({ token, user })
+  }
+
+  const handleLogout = () => {
+    clearAuth()
+    setAuth(null)
+  }
+
+  const handleNewChat = async () => {
+    try {
+      const conv = await createConversation(auth.user.id, '新对话')
+      setConversations(prev => [conv, ...prev])
+      setCurrentConvId(conv.id)
+      setMessages([])
+    } catch (e) {
+      console.error('创建会话失败', e)
+    }
   }
 
   const handleSelectConversation = (id) => {
-    setCurrentConversationId(id)
-    // 这里可以根据选择的对话ID加载对应的消息
+    if (id !== currentConvId) setCurrentConvId(id)
   }
 
-  const handleSendMessage = (content) => {
-    const userMessage = {
-      id: messages.length + 1,
-      type: 'user',
-      content: content,
-      timestamp: new Date()
+  const handleSendMessage = async (content) => {
+    // 确保有会话（无会话时先创建）
+    let convId = currentConvId
+    if (!convId) {
+      const conv = await createConversation(auth.user.id, content.slice(0, 30))
+      setConversations(prev => [conv, ...prev])
+      setCurrentConvId(conv.id)
+      convId = conv.id
     }
-    setMessages([...messages, userMessage])
 
-    // 模拟系统回复
-    setTimeout(() => {
-      const systemMessage = {
-        id: messages.length + 2,
-        type: 'system',
-        content: '这是一个模拟的系统回复。实际应用中，这里会调用后端 API 获取真实的回复内容。',
-        timestamp: new Date()
+    // 用户消息写入后端 + 立即显示
+    let userMsg
+    try {
+      userMsg = await createMessage(convId, 'user', content)
+    } catch (e) {
+      console.error('发送消息失败', e)
+      return
+    }
+    setMessages(prev => [...prev, { ...userMsg, timestamp: new Date(userMsg.created_at) }])
+
+    // 更新会话标题（首条消息时用消息内容作标题）
+    const conv = conversations.find(c => c.id === convId)
+    if (conv?.title === '新对话') {
+      const newTitle = content.slice(0, 30)
+      updateConversation(convId, { title: newTitle }).then(updated => {
+        setConversations(prev => prev.map(c => c.id === convId ? updated : c))
+      }).catch(() => {})
+    }
+
+    // 模拟 AI 回复（存入后端）
+    setTimeout(async () => {
+      try {
+        const assistantMsg = await createMessage(
+          convId, 'assistant',
+          '这是一个模拟的 AI 回复。实际应用中，这里会调用大模型接口获取真实的回复内容。'
+        )
+        setMessages(prev => [...prev, { ...assistantMsg, timestamp: new Date(assistantMsg.created_at) }])
+        // 更新会话列表中的 updated_at（触发排序刷新）
+        setConversations(prev => {
+          const idx = prev.findIndex(c => c.id === convId)
+          if (idx < 0) return prev
+          const updated = { ...prev[idx], updated_at: new Date().toISOString() }
+          return [updated, ...prev.filter(c => c.id !== convId)]
+        })
+      } catch (e) {
+        console.error('保存 AI 回复失败', e)
       }
-      setMessages(prev => [...prev, systemMessage])
     }, 1000)
   }
+
+  if (!auth) return <LoginPage onLogin={handleLogin} />
 
   return (
     <div className="app-container">
@@ -82,12 +143,16 @@ function App() {
         collapsed={sidebarCollapsed}
         onToggleCollapsed={() => setSidebarCollapsed(!sidebarCollapsed)}
         conversations={conversations}
-        currentConversationId={currentConversationId}
+        convsLoading={convsLoading}
+        currentConvId={currentConvId}
         onSelectConversation={handleSelectConversation}
         onNewChat={handleNewChat}
+        user={auth.user}
+        onLogout={handleLogout}
       />
       <MainContent
         messages={messages}
+        msgsLoading={msgsLoading}
         onSendMessage={handleSendMessage}
         sidebarCollapsed={sidebarCollapsed}
         onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}

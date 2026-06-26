@@ -14,10 +14,11 @@ export default function ChatMessage({ message }) {
   }
 
   const isUser = message.type === 'user'
+  const displayType = isUser ? 'user' : 'system'
 
   return (
-    <div className={`message-wrapper ${message.type}`}>
-      <div className={`message-content ${message.type}`}>
+    <div className={`message-wrapper ${displayType}`}>
+      <div className={`message-content ${displayType}`}>
         {isUser ? (
           <div className="user-message-bubble">
             {message.content}
@@ -70,9 +71,9 @@ export default function ChatMessage({ message }) {
       </div>
 
       <span className="message-timestamp">
-        {message.timestamp.toLocaleTimeString('zh-CN', {
+        {new Date(message.timestamp).toLocaleTimeString('zh-CN', {
           hour: '2-digit',
-          minute: '2-digit'
+          minute: '2-digit',
         })}
       </span>
     </div>

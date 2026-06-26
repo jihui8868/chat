@@ -112,11 +112,11 @@
 .conversation-item {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
   width: 100%;
 }
 
-.conversation-item .title {
+.conv-title {
   color: var(--color-text-primary);
   font-size: 13px;
   font-weight: 400;
@@ -125,9 +125,25 @@
   text-overflow: ellipsis;
 }
 
-.conversation-item .timestamp {
+.conv-time {
   color: var(--color-text-secondary);
-  font-size: 12px;
+  font-size: 11px;
+}
+
+.convs-loading {
+  display: flex;
+  justify-content: center;
+  padding: 24px 0;
+}
+
+.convs-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 40px 0;
+  color: var(--color-text-secondary);
+  font-size: 13px;
 }
 
 /* 底部用户信息 */
@@ -171,6 +187,56 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.settings-btn-wrapper {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.user-popup-menu {
+  position: fixed;
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  min-width: 140px;
+  padding: 4px;
+  z-index: 1000;
+}
+
+.user-popup-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--color-text-primary);
+  border-radius: var(--radius-sm);
+  transition: background-color 0.15s;
+  text-align: left;
+}
+
+.user-popup-item:hover {
+  background-color: var(--color-highlight);
+}
+
+.user-popup-item.danger {
+  color: #ff4d4f;
+}
+
+.user-popup-item.danger:hover {
+  background-color: #fff2f0;
+}
+
+.user-popup-divider {
+  height: 1px;
+  background: var(--color-border);
+  margin: 4px 0;
 }
 
 .settings-btn {
