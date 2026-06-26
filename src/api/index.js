@@ -99,3 +99,10 @@ export async function createMessage(convId, type, content) {
     body: JSON.stringify({ type, content }),
   })
 }
+
+export async function sendChat(convId, content) {
+  return request(`/conversations/${convId}/chat`, {
+    method: 'POST',
+    body: JSON.stringify({ content }),
+  })
+}

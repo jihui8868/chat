@@ -6,7 +6,7 @@ import LoginPage from './components/LoginPage'
 import {
   login, saveAuth, loadAuth, clearAuth,
   fetchConversations, createConversation, updateConversation,
-  fetchMessages, createMessage,
+  fetchMessages, sendChat,
 } from './api/index.js'
 
 function App() {
@@ -95,16 +95,6 @@ function App() {
       convId = conv.id
     }
 
-    // 用户消息写入后端 + 立即显示
-    let userMsg
-    try {
-      userMsg = await createMessage(convId, 'user', content)
-    } catch (e) {
-      console.error('发送消息失败', e)
-      return
-    }
-    setMessages(prev => [...prev, { ...userMsg, timestamp: new Date(userMsg.created_at) }])
-
     // 更新会话标题（首条消息时用消息内容作标题）
     const conv = conversations.find(c => c.id === convId)
     if (conv?.title === '新对话') {
@@ -114,25 +104,28 @@ function App() {
       }).catch(() => {})
     }
 
-    // 模拟 AI 回复（存入后端）
-    setTimeout(async () => {
-      try {
-        const assistantMsg = await createMessage(
-          convId, 'assistant',
-          '这是一个模拟的 AI 回复。实际应用中，这里会调用大模型接口获取真实的回复内容。'
-        )
-        setMessages(prev => [...prev, { ...assistantMsg, timestamp: new Date(assistantMsg.created_at) }])
-        // 更新会话列表中的 updated_at（触发排序刷新）
-        setConversations(prev => {
-          const idx = prev.findIndex(c => c.id === convId)
-          if (idx < 0) return prev
-          const updated = { ...prev[idx], updated_at: new Date().toISOString() }
-          return [updated, ...prev.filter(c => c.id !== convId)]
-        })
-      } catch (e) {
-        console.error('保存 AI 回复失败', e)
-      }
-    }, 1000)
+    // 调用 chat 接口，由后端保存用户消息并获取 AI 回复
+    let data
+    try {
+      data = await sendChat(convId, content)
+    } catch (e) {
+      console.error('发送消息失败', e)
+      return
+    }
+
+    setMessages(prev => [
+      ...prev,
+      { ...data.user_message, timestamp: new Date(data.user_message.created_at) },
+      { ...data.assistant_message, timestamp: new Date(data.assistant_message.created_at) },
+    ])
+
+    // 更新会话列表中的 updated_at（触发排序刷新）
+    setConversations(prev => {
+      const idx = prev.findIndex(c => c.id === convId)
+      if (idx < 0) return prev
+      const updated = { ...prev[idx], updated_at: new Date().toISOString() }
+      return [updated, ...prev.filter(c => c.id !== convId)]
+    })
   }
 
   if (!auth) return <LoginPage onLogin={handleLogin} />
